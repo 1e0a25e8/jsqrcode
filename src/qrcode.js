@@ -44,7 +44,10 @@ qrcode.decode = function(src){
         else
         {
             var image = new Image();
-            image.onload=function(){
+            image.onerror = function() {
+                reject('qr image src failed to load');
+            }
+            image.onload = function() {
                 //var canvas_qr = document.getElementById("qr-canvas");
                 var canvas_qr = document.createElement('canvas');
                 var context = canvas_qr.getContext('2d');
