@@ -28,8 +28,9 @@ qrcode.sizeOfDataLengthInfo =  [  [ 10, 9, 8, 8 ],  [ 12, 11, 16, 10 ],  [ 14, 1
 qrcode.callback = null;
 
 qrcode.decode = function(src){
+    var origArguments = arguments;
     return new Promise(function(resolve, reject) {
-        if(arguments.length==0)
+        if(origArguments.length==0)
         {
             var canvas_qr = document.getElementById("qr-canvas");
             var context = canvas_qr.getContext('2d');
@@ -39,7 +40,7 @@ qrcode.decode = function(src){
             qrcode.result = qrcode.process(context);
             if(qrcode.callback!=null)
                 qrcode.callback(qrcode.result);
-            return resolve(qrcode.result);
+            resolve(qrcode.result);
         }
         else
         {
@@ -72,8 +73,8 @@ qrcode.decode = function(src){
                     qrcode.result = "Cross domain image reading not supported in your browser! Save it to your computer then drag and drop the file!";
                     if(qrcode.callback!=null) {
                         qrcode.callback(qrcode.result);
-                        resolve(qrcode.result);
                     }
+                    resolve(qrcode.result);
                     return;
                 }
                 
@@ -88,8 +89,8 @@ qrcode.decode = function(src){
                 }
                 if(qrcode.callback!=null) {
                     qrcode.callback(qrcode.result);
-                    resolve(qrcode.result)
                 }
+                resolve(qrcode.result)
             }
             image.src = src;
         }
