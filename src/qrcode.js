@@ -28,64 +28,69 @@ qrcode.sizeOfDataLengthInfo =  [  [ 10, 9, 8, 8 ],  [ 12, 11, 16, 10 ],  [ 14, 1
 qrcode.callback = null;
 
 qrcode.decode = function(src){
-    
-    if(arguments.length==0)
-    {
-        var canvas_qr = document.getElementById("qr-canvas");
-        var context = canvas_qr.getContext('2d');
-        qrcode.width = canvas_qr.width;
-        qrcode.height = canvas_qr.height;
-        qrcode.imagedata = context.getImageData(0, 0, qrcode.width, qrcode.height);
-        qrcode.result = qrcode.process(context);
-        if(qrcode.callback!=null)
-            qrcode.callback(qrcode.result);
-        return qrcode.result;
-    }
-    else
-    {
-        var image = new Image();
-        image.onload=function(){
-            //var canvas_qr = document.getElementById("qr-canvas");
-            var canvas_qr = document.createElement('canvas');
+    return new Promise(function(resolve, reject) {
+        if(arguments.length==0)
+        {
+            var canvas_qr = document.getElementById("qr-canvas");
             var context = canvas_qr.getContext('2d');
-            var nheight = image.height;
-            var nwidth = image.width;
-            if(image.width*image.height>qrcode.maxImgSize)
-            {
-                var ir = image.width / image.height;
-                nheight = Math.sqrt(qrcode.maxImgSize/ir);
-                nwidth=ir*nheight;
-            }
-
-            canvas_qr.width = nwidth;
-            canvas_qr.height = nheight;
-            
-            context.drawImage(image, 0, 0, canvas_qr.width, canvas_qr.height );
             qrcode.width = canvas_qr.width;
             qrcode.height = canvas_qr.height;
-            try{
-                qrcode.imagedata = context.getImageData(0, 0, canvas_qr.width, canvas_qr.height);
-            }catch(e){
-                qrcode.result = "Cross domain image reading not supported in your browser! Save it to your computer then drag and drop the file!";
-                if(qrcode.callback!=null)
-                    qrcode.callback(qrcode.result);
-                return;
-            }
-            
-            try
-            {
-                qrcode.result = qrcode.process(context);
-            }
-            catch(e)
-            {
-                console.log(e);
-                qrcode.result = "error decoding QR Code";
-            }
+            qrcode.imagedata = context.getImageData(0, 0, qrcode.width, qrcode.height);
+            qrcode.result = qrcode.process(context);
             if(qrcode.callback!=null)
                 qrcode.callback(qrcode.result);
+            return resolve(qrcode.result);
         }
-        image.src = src;
-    }
+        else
+        {
+            var image = new Image();
+            image.onload=function(){
+                //var canvas_qr = document.getElementById("qr-canvas");
+                var canvas_qr = document.createElement('canvas');
+                var context = canvas_qr.getContext('2d');
+                var nheight = image.height;
+                var nwidth = image.width;
+                if(image.width*image.height>qrcode.maxImgSize)
+                {
+                    var ir = image.width / image.height;
+                    nheight = Math.sqrt(qrcode.maxImgSize/ir);
+                    nwidth=ir*nheight;
+                }
+
+                canvas_qr.width = nwidth;
+                canvas_qr.height = nheight;
+                
+                context.drawImage(image, 0, 0, canvas_qr.width, canvas_qr.height );
+                qrcode.width = canvas_qr.width;
+                qrcode.height = canvas_qr.height;
+                try{
+                    qrcode.imagedata = context.getImageData(0, 0, canvas_qr.width, canvas_qr.height);
+                }catch(e){
+                    qrcode.result = "Cross domain image reading not supported in your browser! Save it to your computer then drag and drop the file!";
+                    if(qrcode.callback!=null) {
+                        qrcode.callback(qrcode.result);
+                        resolve(qrcode.result);
+                    }
+                    return;
+                }
+                
+                try
+                {
+                    qrcode.result = qrcode.process(context);
+                }
+                catch(e)
+                {
+                    console.log(e);
+                    qrcode.result = "error decoding QR Code";
+                }
+                if(qrcode.callback!=null) {
+                    qrcode.callback(qrcode.result);
+                    resolve(qrcode.result)
+                }
+            }
+            image.src = src;
+        }
+    });
 }
 
 qrcode.isUrl = function(s)
